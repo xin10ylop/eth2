@@ -178,6 +178,18 @@ if rc["T"]:
       "for calendar features, and recent data is up-weighted with a 180-day half-life. That configuration is "
       "the best on validation for both horizons and in every validation month.\n")
 
+# ---------------------------------------------------------------- ETH-specific decisions
+cc = {h: load(f"ablation/cross_check_{h}.json") for h in ("60", "T")}
+if any(cc.values()):
+    w("### Where the BTC-leader block belongs (validation)\n")
+    w("| horizon | BTC features everywhere | volatility engine only | nowhere |\n|---|---|---|---|")
+    for h, r_ in cc.items():
+        if r_:
+            w(f"| {HN[h]} | {r_['x_everywhere']['above_ref_ll']:.5f} (IC {r_['x_everywhere']['ic']:.4f}) | "
+              f"{r_['x_vol_only']['above_ref_ll']:.5f} (IC {r_['x_vol_only']['ic']:.4f}) | {r_['x_nowhere']['above_ref_ll']:.5f} (IC {r_['x_nowhere']['ic']:.4f}) |")
+    w("\nThe BTC lead drives direction up to 60 s and feeds volatility at every horizon. For the 5-minute drift it is "
+      "noise; that model receives the lead through the stacked 30 s / 60 s forecasts (docs/RESEARCH_ETH.md).\n")
+
 # ---------------------------------------------------------------- ablations
 w("## 7. What drives the predictions (ablations on the validation period)\n")
 for H in ("30", "60", "T"):

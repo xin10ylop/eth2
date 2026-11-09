@@ -61,6 +61,33 @@ tested.
 **6. Variance ratios.** E[R²]/E[RV] for 1-second-sampled RV is 1.23–1.38 because of positive short-lag
 autocorrelation. With 5-second sampling it is 1.11–1.20, and with 10-second sampling 1.05–1.15.
 
+**7. Where ETH *is* more predictable: volatility.** The test is an out-of-sample R² of the log future realised
+variance (5-second sampled) from a HAR-style regression on the asset's own realised variance, with the identical
+protocol for both assets:
+
+| month | 30 s: ETH / BTC | 60 s: ETH / BTC | 300 s: ETH / BTC |
+|---|---|---|---|
+| 2024-08 | **0.297** / 0.259 | **0.444** / 0.329 | 0.611 / **0.642** |
+| 2025-09 | **0.350** / 0.319 | **0.436** / 0.350 | **0.633** / 0.418 |
+| 2026-05 | **0.283** / 0.226 | **0.365** / 0.230 | **0.521** / 0.473 |
+| 2026-09 | **0.389** / 0.304 | **0.480** / 0.322 | **0.621** / 0.529 |
+
+ETH's short-horizon volatility is markedly more forecastable than BTC's: +0.04 to +0.15 of R² at 30–60 s, in every
+month. This is the main reason ETH should be *more* predictable for this task. P(price ≥ K) is driven mostly by
+the displacement measured in units of the forecast remaining volatility, so a sharper volatility forecast
+directly sharpens every reference-anchored probability.
+
+**8. ETH follows large BTC moves, and keeps going.** After a BTC-perpetual second beyond 4σ (about 1% of seconds,
+roughly 4 per 5-minute window), ETH spot makes 94–108% of its beta-implied move in the same second. It then
+continues a further **+24% to +49% in the same direction over the next 10–30 s**. After ETH's own perpetual
+shocks, ETH spot continues only +11% to +21%.
+
+Explicit shock features add essentially nothing beyond the generic leader block, at most +0.003 IC and only at 1–5 s
+(`study5.py`). The continuation is already captured by the BTC and ETH return features, and the trees handle the
+tail non-linearity.
+
+**9. Minute-scale mean reversion.** There is no consistent ETH-vs-BTC difference: the 1- and 5-minute return
+autocorrelations are within ±0.05 for both.
 
 ## Design decisions that follow
 
@@ -76,8 +103,28 @@ autocorrelation. With 5-second sampling it is 1.11–1.20, and with 10-second sa
   (finding 6).
 * **ETH round-number levels** are $10, $50 and $100, the equivalent scale of BTC's $100/$500/$1000. They are kept
   only if the ablation supports them.
-* **Expectation.** For ETH, the directional skill beyond a few seconds should be lower than for BTC (finding 3).
-  Any ETH advantage will come from the very short horizons and from volatility, not from 30 s – 5 min direction.
+* **Why ETH is more predictable, and how the model uses it.** The advantage is in **volatility** (finding 7) and in
+  the very short horizons (finding 3, 1 s), not in 30 s – 5 min direction. The volatility engine therefore carries
+  the ETH edge. It gets the BTC volatility inputs (finding 5), and the structural layer turns sharper volatility
+  into sharper reference-anchored probabilities.
+* **No explicit BTC-shock features** (finding 8: no incremental value beyond the leader block).
   Every recipe choice (regime handling, recency weighting, adaptive ensemble per horizon) is re-decided on ETH's
   validation period rather than copied from BTC.
 
+
+## Validation-period decisions (Mar–May 2026; the test period was not used)
+
+These come from `scripts/05_ablation.py`, `13_regime_check.py` and `16_cross_check.py`, run on the volatility and
+drift engines plus the structural above-reference probability:
+
+| decision | evidence (validation above-reference log loss, lower is better) | choice |
+|---|---|---|
+| BTC leader block at 30 s | with 0.32616, without 0.32654; IC 0.1465 vs 0.1441 | **keep** |
+| BTC leader at 1 min | everywhere 0.41054, volatility only 0.41062, nowhere 0.41104 | **direction + volatility** |
+| BTC leader at 5 min | everywhere 0.47397, **volatility only 0.47379**, nowhere 0.47389 | **volatility only** (lead is gone by 5 min) |
+| ETH round-number levels ($10/$50/$100) | 30 s: with 0.32616, without 0.32640 | **keep** (unlike BTC, where they did nothing) |
+| regime state in the volatility engine | 30 s 0.32616 → 0.32614; 5 min 0.47397 → 0.47395 | keep (neutral; adaptivity) |
+| 180-day recency weighting | improves 10 s, 15 s and 5 min in every month; worsens 30 s and 60 s in every month | **10 s, 15 s and 5 min only** |
+| perpetual (ETH) features | removing them costs 30 s IC 0.147 → 0.107 | core |
+
+Rule used for recency weighting: adopt it for a horizon only if no validation month got worse.

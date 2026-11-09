@@ -23,9 +23,12 @@ ap.add_argument("--smoke", action="store_true")
 ap.add_argument("--dates", default="", help="walk-forward: train_start,val_start,test_start,test_end (YYYY-MM-DD)")
 ap.add_argument("--out", default="artifacts/models")
 ap.add_argument("--drop", default="", help="comma-separated feature prefixes to drop (ablation)")
-ap.add_argument("--half-life", type=float, default=180.0,
+ap.add_argument("--half-life", type=float, default=0.0,
                 help="recency weighting of training rows, half-life in days (0 = unweighted)")
 ap.add_argument("--no-regime", action="store_true", help="exclude the multi-day regime features (v1 recipe)")
+ap.add_argument("--half-life-map", default="10:180,15:180,T:180",
+                help="per-horizon override of --half-life, e.g. '10:180,15:180,T:180' (ETH validation decision: weighting is "
+                     "adopted only for horizons where no validation month got worse)")
 a = ap.parse_args()
 
 splits = data.SPLITS
@@ -53,16 +56,22 @@ drops = [d for d in a.drop.split(",") if d] + (["rg_"] if a.no_regime else [])
 feats = [f for f in feats if not any(f.startswith(d) for d in drops)]
 log(f"train {len(tr):,} rows  val {len(va):,} rows  {len(feats)} features  splits={splits}  ({time.time()-t0:.0f}s)")
 
-W = None
-if a.half_life > 0:
-    age = (data.ts_of(splits["train"][1]) - tr["ts"].to_numpy()) / 86400.0
-    W = 0.5 ** (age / a.half_life)
-    log(f"recency weighting: half-life {a.half_life:.0f} days, effective sample share {W.sum()**2 / (W**2).sum() / len(W):.2f}")
+HL = {kv.split(":")[0]: float(kv.split(":")[1]) for kv in a.half_life_map.split(",") if kv}
+AGE = (data.ts_of(splits["train"][1]) - tr["ts"].to_numpy()) / 86400.0
+
+
+def weights_for(H):
+    hl = HL.get(H, a.half_life)
+    if hl <= 0:
+        return None
+    W = 0.5 ** (AGE / hl)
+    log(f"[{H}] recency weighting: half-life {hl:.0f} days, effective sample share {W.sum()**2 / (W**2).sum() / len(W):.2f}")
+    return W
 stacked = []
 for H in a.horizons.split(","):
     hfeats = feats + (stacked if H == "T" else [])
     hm = model.HorizonModel(H, hfeats, log=log)
-    hm.w_tr = W
+    hm.w_tr = weights_for(H)
     (sd_tr, m_tr), (sd_va, m_va) = hm.fit_ab(tr, va)
     hm.fit_shape(tr, sd_tr, m_tr)
     s_tr = hm.structural(tr, sd_tr, m_tr)
@@ -77,7 +86,7 @@ for H in a.horizons.split(","):
     hm.fit_heads(tr, s_tr, va, s_va, heads=tuple(a.heads.split(",")))
     hm.log = None
     hm.w_tr = None
-    hm.recipe = {"half_life_days": a.half_life, "regime_features": not a.no_regime, "frac": a.frac, "splits": splits}
+    hm.recipe = {"half_life_days": HL.get(H, a.half_life), "regime_features": not a.no_regime, "frac": a.frac, "splits": splits}
     with open(out / f"horizon_{H}.pkl", "wb") as f:
         pickle.dump(hm, f)
     log(f"[{H}] saved ({time.time()-t0:.0f}s)")

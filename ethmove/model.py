@@ -35,6 +35,11 @@ BASE = dict(learning_rate=0.05, num_leaves=63, min_data_in_leaf=2000, feature_fr
 # Pure calendar features are allowed in the volatility engine (intraday vol seasonality is robust) but
 # excluded from every directional model: calendar "drift" effects are a classic source of overfitting.
 CALENDAR = ("hour_sin", "hour_cos", "dow", "min_of_hour", "sec_of_min")
+# Multi-day regime state (prefix rg_) is likewise allowed only in the volatility engine.
+# BTC-leader features (prefix x_) drive direction only up to 60 s: the BTC->ETH directional lead is gone within
+# a minute (docs/RESEARCH_ETH.md, finding 3), so they are noise for the 5-minute drift, which still receives the
+# lead through the stacked 30 s / 60 s forecasts.  They feed the volatility engine at every horizon.
+CROSS_DIR_HORIZONS = ("10", "15", "30", "60")
 # Multi-day regime state (ethmove/regime.py, prefix rg_) is likewise allowed only in the volatility engine.
 
 
@@ -95,7 +100,8 @@ class HorizonModel:
         self.H = H
         self.feats = list(feats)
         # regime state may scale volatility / tails but never drive direction (same rule as calendar features)
-        self.dir_feats = [f for f in self.feats if f not in CALENDAR and not f.startswith("rg_")]
+        self.dir_feats = [f for f in self.feats if f not in CALENDAR and not f.startswith("rg_")
+                          and (H in CROSS_DIR_HORIZONS or not f.startswith("x_"))]
         self.log = log
         self.n_folds = n_folds
         self.models = {}

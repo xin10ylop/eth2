@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# Walk-forward with the final (v2) recipe: retrain the full stack on expanding windows and evaluate on later,
-# disjoint test periods covering different market regimes.
-#   Fold A: train Feb 2024 - Feb 2025, val Mar-Apr 2025, test May - Aug 2025   (bull run: 94k -> 124k -> 109k)
-#   Fold B: train Feb 2024 - Aug 2025, val Sep-Oct 2025, test Nov 2025 - Feb 2026 (crash: 110k -> 63k, -43%)
-#   Main  : train Feb 2024 - Feb 2026, val Mar-May 2026, test Jun - Nov 2026      (bear low 58k, rebound to 87k)
+# Walk-forward (ETHUSDT): retrain the full stack on expanding windows, evaluate on later disjoint test periods.
+#   Fold A: train Feb 2024 - Feb 2025, val Mar-Apr 2025, test May - Aug 2025    (bull run: 1.8k -> 4.9k, +175%)
+#   Fold B: train Feb 2024 - Aug 2025, val Sep-Oct 2025, test Nov 2025 - Feb 2026 (crash: 3.85k -> 1.8k, -53%)
+#   Main  : train Feb 2024 - Feb 2026, val Mar-May 2026, test Jun - Nov 2026       (bear low 1.5k, rebound to 2.8k)
 set -e
 cd "$(dirname "$0")/.."
 FRAC=${FRAC:-0.3}
