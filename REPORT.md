@@ -220,6 +220,12 @@ This is P(S(t+h) > S(t)). It isolates genuine predictive power: no information c
 
 | fold | test period | horizon | naive RW | full | full+recal | Δ full vs naive | dir. AUC |
 |---|---|---|---|---|---|---|---|
+| A | 2025-05-01 → 2025-09-01 | 30-second | 0.3427 | 0.3286 | 0.3286 | +14.1 [+13.1, +15.5] | 0.563 |
+| A | 2025-05-01 → 2025-09-01 | 1-minute | 0.4416 | 0.4280 | 0.4281 | +13.6 [+12.2, +15.0] | 0.543 |
+| A | 2025-05-01 → 2025-09-01 | 5-minute (to close) | 0.4656 | 0.4567 | 0.4569 | +8.9 [+7.6, +10.2] | 0.538 |
+| B | 2025-11-01 → 2026-03-01 | 30-second | 0.3534 | 0.3355 | 0.3353 | +17.9 [+16.2, +20.2] | 0.571 |
+| B | 2025-11-01 → 2026-03-01 | 1-minute | 0.4508 | 0.4351 | 0.4348 | +15.7 [+13.8, +17.7] | 0.549 |
+| B | 2025-11-01 → 2026-03-01 | 5-minute (to close) | 0.4741 | 0.4631 | 0.4630 | +11.0 [+9.3, +12.8] | 0.546 |
 | val | 2026-03-01 → 2026-06-01 | 10-second | 0.2246 | 0.2003 | 0.2002 | +24.3 [+21.8, +26.7] | 0.649 |
 | val | 2026-03-01 → 2026-06-01 | 15-second | 0.2666 | 0.2435 | 0.2433 | +23.0 [+20.5, +25.6] | 0.628 |
 | val | 2026-03-01 → 2026-06-01 | 30-second | 0.3518 | 0.3301 | 0.3298 | +21.8 [+19.7, +24.0] | 0.592 |
@@ -257,6 +263,48 @@ Regime variables are causal (only previous days), and their thresholds are fixed
 | intraday activity (1-hour vol) | hot hour | 8,422 | +5.3 [+3.4, +7.2] | 0.856 | +8.6 | +8.8 | 0.543 |
 | calendar | weekday | 31,680 | +9.8 [+8.5, +11.0] | 0.854 | +16.2 | +18.6 | 0.572 |
 | calendar | weekend | 12,672 | +22.0 [+19.0, +25.9] | 0.848 | +28.5 | +36.9 | 0.599 |
+
+### walk-forward fold A (May–Aug 2025: bull run, +175%)
+
+| regime family | slice | windows | Δ 5-min [95% CI] | 5-min AUC | Δ 1-min | Δ 30s | 30s direction AUC |
+|---|---|---|---|---|---|---|---|
+| all | all | 35,136 | +8.9 [+7.6, +10.2] | 0.857 | +13.6 | +14.1 | 0.563 |
+| volatility regime (7-day) | calm | 4,608 | +7.8 [+3.9, +12.7] | 0.860 | +15.2 | +16.9 | 0.576 |
+| volatility regime (7-day) | normal | 15,264 | +8.6 [+6.9, +10.2] | 0.856 | +14.0 | +14.0 | 0.564 |
+| volatility regime (7-day) | turbulent | 15,264 | +9.5 [+7.8, +11.2] | 0.856 | +12.7 | +13.5 | 0.559 |
+| trend regime (7-day) | bear | 6,048 | +10.0 [+7.7, +12.7] | 0.857 | +15.3 | +15.8 | 0.568 |
+| trend regime (7-day) | sideways | 13,824 | +9.6 [+7.5, +11.8] | 0.855 | +15.5 | +16.1 | 0.570 |
+| trend regime (7-day) | bull | 15,264 | +7.8 [+6.2, +9.4] | 0.858 | +11.2 | +11.7 | 0.555 |
+| drawdown from 30-day high | deep (< -3 daily sd) | 6,336 | +9.7 [+7.1, +12.0] | 0.856 | +17.9 | +19.9 | 0.586 |
+| drawdown from 30-day high | shallow | 28,800 | +8.7 [+7.2, +10.2] | 0.857 | +12.6 | +12.9 | 0.558 |
+| vol expansion (7d vs 30d) | expanding (> +0.3) | 5,472 | +9.0 [+6.4, +11.0] | 0.857 | +11.9 | +14.0 | 0.560 |
+| vol expansion (7d vs 30d) | stable/contracting | 29,664 | +8.9 [+7.5, +10.3] | 0.857 | +13.9 | +14.2 | 0.564 |
+| intraday activity (1-hour vol) | quiet hour | 7,713 | +15.6 [+12.3, +18.8] | 0.855 | +24.8 | +25.2 | 0.602 |
+| intraday activity (1-hour vol) | normal hour | 14,411 | +8.3 [+6.7, +9.9] | 0.856 | +13.5 | +14.6 | 0.563 |
+| intraday activity (1-hour vol) | hot hour | 15,093 | +6.1 [+4.7, +7.6] | 0.858 | +8.1 | +8.2 | 0.540 |
+| calendar | weekday | 25,056 | +6.6 [+5.6, +7.6] | 0.859 | +11.1 | +12.0 | 0.555 |
+| calendar | weekend | 10,080 | +14.6 [+12.6, +16.8] | 0.852 | +19.7 | +19.4 | 0.583 |
+
+### walk-forward fold B (Nov 2025–Feb 2026: crash −53%)
+
+| regime family | slice | windows | Δ 5-min [95% CI] | 5-min AUC | Δ 1-min | Δ 30s | 30s direction AUC |
+|---|---|---|---|---|---|---|---|
+| all | all | 34,272 | +11.0 [+9.3, +12.8] | 0.853 | +15.7 | +17.9 | 0.571 |
+| volatility regime (7-day) | calm | 8,928 | +16.7 [+13.0, +20.8] | 0.853 | +21.9 | +24.9 | 0.593 |
+| volatility regime (7-day) | normal | 13,536 | +11.2 [+8.6, +13.9] | 0.851 | +16.5 | +18.9 | 0.574 |
+| volatility regime (7-day) | turbulent | 11,808 | +6.4 [+4.4, +8.7] | 0.855 | +9.9 | +11.5 | 0.550 |
+| trend regime (7-day) | bear | 14,976 | +7.7 [+5.2, +9.9] | 0.854 | +11.9 | +13.6 | 0.557 |
+| trend regime (7-day) | sideways | 13,536 | +13.0 [+10.5, +15.9] | 0.852 | +17.8 | +20.7 | 0.582 |
+| trend regime (7-day) | bull | 5,760 | +14.9 [+9.4, +20.4] | 0.849 | +20.3 | +22.6 | 0.583 |
+| drawdown from 30-day high | deep (< -3 daily sd) | 25,920 | +9.9 [+7.8, +11.7] | 0.853 | +14.1 | +16.0 | 0.566 |
+| drawdown from 30-day high | shallow | 8,352 | +14.3 [+10.6, +18.4] | 0.853 | +20.4 | +23.9 | 0.588 |
+| vol expansion (7d vs 30d) | expanding (> +0.3) | 7,488 | +7.7 [+4.4, +11.2] | 0.855 | +10.9 | +12.9 | 0.551 |
+| vol expansion (7d vs 30d) | stable/contracting | 26,784 | +11.9 [+9.7, +13.9] | 0.852 | +17.0 | +19.3 | 0.576 |
+| intraday activity (1-hour vol) | quiet hour | 11,309 | +21.5 [+18.4, +24.6] | 0.847 | +28.6 | +32.6 | 0.611 |
+| intraday activity (1-hour vol) | normal hour | 11,301 | +8.5 [+6.7, +10.8] | 0.853 | +13.3 | +15.0 | 0.566 |
+| intraday activity (1-hour vol) | hot hour | 13,425 | +4.1 [+2.7, +5.7] | 0.857 | +6.7 | +8.0 | 0.537 |
+| calendar | weekday | 24,480 | +8.2 [+6.7, +9.9] | 0.854 | +12.2 | +13.7 | 0.560 |
+| calendar | weekend | 9,792 | +18.0 [+14.1, +21.7] | 0.850 | +24.4 | +28.5 | 0.599 |
 
 ### How regime handling was chosen (validation period only)
 
@@ -344,14 +392,17 @@ sharing no code with the feature pipeline. On the test period:
 * **Two live feeds, both low latency.** The directional edge lives at the 1–2 second scale and comes from ETH's
   perpetual and from BTC. In live use the engine needs ETH spot, ETH perp, BTC spot and BTC perp. A stale leader
   feed is forward-filled, which silently removes part of the short-horizon skill.
-* **ETH is more predictable at 5 minutes, BTC at 10–60 s.** ETH's advantage comes from its more forecastable
-  volatility. Its directional skill beyond a few seconds is lower than BTC's, because its spot catches up with
-  the perpetual faster (docs/RESEARCH_ETH.md).
+* **ETH vs BTC depends on horizon and period.** At 5 minutes ETH was more predictable in 2026, marginally ahead in the crash and
+  trailed slightly in the 2025 bull run. From 30 s to 1 min BTC was more predictable in every period. ETH's advantage
+  comes from its more forecastable volatility, and its directional skill beyond a few seconds is lower than BTC's
+  (docs/RESEARCH_ETH.md).
 * **Window-open direction is close to efficient.** At `e = 0` the 5-minute AUC is about 0.54. The value of the
   5-minute model is in continuous re-pricing through the window.
 * **No transaction costs or market prices.** Log-loss gains are statistical skill. Turning them into profit
   depends on prices, fees and latency, none of which are modelled here.
-* **Regime risk.** WALKFORWARD_SENTENCE A structural change in market microstructure would require retraining
+* **Regime risk.** Walk-forward retrains tested on the 2025 bull run (+175%) and the 2025–26 crash (−53%)
+  improve on the naive baseline in every month and in every regime slice: 5-minute +8.9 and +11.0 millinats, 30 s
+  +14.1 and +17.9. The edge is smallest in the busiest hours. A structural change in market microstructure would require retraining
   (`scripts/11_train_production.sh`); the live `regime_alert` is designed to flag it.
 * **Architecture.** A temporal CNN on the raw last 60 seconds of ETH and BTC sequences learns a forecast 0.93
   correlated with the gradient-boosted drift and adds no incremental IC.

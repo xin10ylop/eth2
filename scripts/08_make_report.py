@@ -169,8 +169,8 @@ w("Regime variables are causal (only previous days), and their thresholds are fi
   "Each cell is the 5-minute log-loss improvement over the naive random walk in millinats, with a 95% day-block "
   "CI, plus AUC. The edge has to hold in **every** slice, not just on average.\n")
 for tag, title in ((f"{MAIN}_test", "main test (Jun–Nov 2026: bear low and rebound)"),
-                   ("wf_A_test", "walk-forward fold A (May–Aug 2025: bull run)"),
-                   ("wf_B_test", "walk-forward fold B (Nov 2025–Feb 2026: crash −43%)")):
+                   ("wf_A_test", "walk-forward fold A (May–Aug 2025: bull run, +175%)"),
+                   ("wf_B_test", "walk-forward fold B (Nov 2025–Feb 2026: crash −53%)")):
     R = reg.get(tag)
     if not R:
         continue

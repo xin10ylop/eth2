@@ -139,6 +139,19 @@ Rule used for recency weighting: adopt it for a horizon only if no validation mo
 | 1 min | 0.433 | 0.420 | BTC |
 | **5 min (to close)** | **0.465** | 0.487 | **ETH**: also higher AUC (0.852 vs 0.838), accuracy (75.5% vs 74.4%) and calibration (ECE 0.0017 vs 0.0025) |
 
+**Across all four evaluation periods** (model log loss, lower = more predictable; "tie" = within 0.0005):
+
+| period | 30 s: ETH / BTC | 1 min: ETH / BTC | 5 min: ETH / BTC |
+|---|---|---|---|
+| 2025 bull run (walk-forward A) | 0.3286 / 0.3083 BTC | 0.4281 / 0.4147 BTC | 0.4569 / 0.4507 BTC |
+| 2025–26 crash (walk-forward B) | 0.3353 / 0.3231 BTC | 0.4348 / 0.4239 BTC | 0.4630 / 0.4641 **ETH** |
+| 2026 validation | 0.3298 / 0.3181 BTC | 0.4296 / 0.4191 BTC | 0.4720 / 0.5133 **ETH** |
+| 2026 test | 0.3332 / 0.3163 BTC | 0.4330 / 0.4202 BTC | 0.4648 / 0.4875 **ETH** |
+
+At 5 minutes ETH is more predictable in 2026, markedly so in validation and test. It edges BTC in the 2025–26 crash
+and trails it slightly in the extreme 2025 bull run (+175% in four months). From 30 s to 1 min BTC is more
+predictable in every period.
+
 **Why ETH is more predictable at the 5-minute horizon:** its volatility is markedly more forecastable (finding 7).
 The probability of finishing above the fixed reference depends mostly on the displacement measured in units of
 the remaining volatility, so smoother, more forecastable volatility makes that probability sharper. Even the
