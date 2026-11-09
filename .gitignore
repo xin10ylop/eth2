@@ -1,0 +1,9 @@
+data
+data/
+__pycache__/
+*.pyc
+*.zip
+artifacts/*.out
+artifacts/*.done
+artifacts/wf_*/*.pkl
+artifacts/models_v1/*.pkl
