@@ -1,0 +1,7 @@
+14:08:56 train 1,538,097 rows  val 533,967 rows  168 features  splits={'train': ('2024-02-01', '2025-09-01'), 'val': ('2025-09-01', '2025-11-01'), 'test': ('2025-11-01', '2026-03-01')}  (23s)
+14:09:00 [30] stage A vol
+14:15:55     fit gamma n=1538097 iters=152 (415s)
+14:17:31     fit gamma n=1025181 iters=152 (94s)
+14:19:28     fit gamma n=1025180 iters=152 (114s)
+14:19:50     fit gamma n=1025282 iters=152 (20s)
+14:19:54 [30] stage B drift

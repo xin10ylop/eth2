@@ -11,7 +11,18 @@ For each horizon it gives:
 * which comes first from the current price: `P(+δ)`, `P(−δ)`, `P(neither)`
 * the forecast volatility (speed of movement)
 
-RESULTS_AT_A_GLANCE
+### Results at a glance (held-out test, 1 Jun – 2 Nov 2026, 44,352 windows never used in development)
+
+| horizon | naive RW log loss | **model** log loss | Δ vs naive, millinats [95% CI] | AUC | accuracy | direction-from-now AUC | top-10% direction accuracy | BTC model log loss (same period) |
+|---|---|---|---|---|---|---|---|---|
+| 10 s | 0.232 | **0.206** | +26.5 [+24.2, +29.2] | 0.974 | 91.2% | 0.624 | 71.6% | 0.190 |
+| 15 s | 0.273 | **0.248** | +25.1 [+22.7, +27.8] | 0.962 | 89.2% | 0.606 | 68.9% | 0.231 |
+| 30 s | 0.357 | **0.333** | +23.8 [+21.6, +26.3] | 0.931 | 84.7% | 0.579 | 65.2% | 0.316 |
+| 1 min | 0.453 | **0.433** | +19.7 [+18.0, +21.6] | 0.878 | 78.8% | 0.556 | 60.7% | 0.420 |
+| 5 min (to close) | 0.478 | **0.465** | +13.3 [+11.8, +15.0] | 0.852 | 75.5% | 0.546 | 60.6% | 0.487 |
+
+These are `P(price ≥ fixed 5-minute reference)` probabilities, re-evaluated every ~10 s through every window. The improvement over the naive random walk is positive in **every test month** at every horizon. It also holds in **every regime slice**: volatility, trend, drawdown, vol expansion, intraday activity and weekday/weekend, with every CI above zero. **ETH vs BTC:** at 5 minutes, ETH is more predictable, with lower log loss, higher AUC and better calibration, because its volatility is more forecastable. From 10 s to 1 minute, BTC is more predictable, because its stronger short-horizon directional lead lasts longer. Full details are in [REPORT.md](REPORT.md).
+
 
 See **[REPORT.md](REPORT.md)** for the full out-of-sample evaluation and
 **[docs/RESEARCH_ETH.md](docs/RESEARCH_ETH.md)** for the research that shaped the ETH design.
@@ -102,4 +113,14 @@ run_binance(LivePredictor.from_artifacts("artifacts/models"), symbol="ETHUSDT", 
             out_path="predictions.jsonl")
 ```
 
-LIVE_EXAMPLE
+Each second emits one JSON record. This is a real (trimmed) output from replaying ETHUSDT on 2026-10-15 14:32:00 UTC through the live engine with the BTC leader buffer (`scripts/09_replay_demo.py`, about 125 ms per second for all five horizons):
+
+```json
+{"ts": 1792074720, "window_start": 1792074600, "elapsed_s": 120, "remaining_s": 180, "reference_price": 2370.75, "price": 2364.72, "displacement_bps": -25.43,
+ "horizons": {
+  "close": {"horizon_s": 180.0, "p_above_reference": 0.082, "p_above_reference_raw": 0.083, "p_above_reference_structural": 0.088, "p_below_reference": 0.918, "p_up_from_now": 0.4884, "expected_move_bps": 0.2536, "sd_bps": 20.6599, "vol_bps_per_sqrt_s": 1.5399, "levels": {"K-10bp": {"price": 2368.38, "p_end_above": 0.1811, "p_touch_before_end": 0.3553}, "K+10bp": {"price": 2373.12, "p_end_above": 0.0337, "p_touch_before_end": 0.0529}}, "first_passage_from_now": {"10bp": {"up_first": 0.457, "down_first": 0.444, "neither": 0.099}}, "price_quantiles": {"q05": 2357.21, "q25": 2361.89, "q50": 2364.6, "q75": 2367.35, "q95": 2371.97}},
+  "10s":   {"horizon_s": 10.0, "p_above_reference": 0.0006, "p_above_reference_raw": 0.0005, "p_above_reference_structural": 0.0016, "p_below_reference": 0.9994, "p_up_from_now": 0.4539, "expected_move_bps": -0.3616, "sd_bps": 5.4725, "vol_bps_per_sqrt_s": 1.7305, "levels": {"K-10bp": {"price": 2368.38, "p_end_above": 0.0048, "p_touch_before_end": 0.0052}, "K+10bp": {"price": 2373.12, "p_end_above": 0.0003, "p_touch_before_end": 0.0003}}, "first_passage_from_now": {"10bp": {"up_first": 0.02, "down_first": 0.044, "neither": 0.936}}, "price_quantiles": {"q05": 2362.73, "q25": 2363.98, "q50": 2364.61, "q75": 2365.25, "q95": 2366.46}},
+  "15s": {"...": "..."}, "30s": {"...": "..."}, "60s": {"...": "..."}},
+ "monitor": {"skill_24h_nats": {"10": null, "15": null, "30": null, "60": null, "T": null}, "cusum_5m": 0.0, "regime_alert": false, "reasons": []}}
+```
+

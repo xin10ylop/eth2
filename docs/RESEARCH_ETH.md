@@ -128,3 +128,26 @@ drift engines plus the structural above-reference probability:
 | perpetual (ETH) features | removing them costs 30 s IC 0.147 → 0.107 | core |
 
 Rule used for recency weighting: adopt it for a horizon only if no validation month got worse.
+
+## Verdict from the full models (held-out test, Jun–Nov 2026, identical protocol for both assets)
+
+| horizon | ETH model log loss | BTC model log loss | more predictable |
+|---|---|---|---|
+| 10 s | 0.206 | 0.190 | BTC |
+| 15 s | 0.248 | 0.231 | BTC |
+| 30 s | 0.333 | 0.316 | BTC |
+| 1 min | 0.433 | 0.420 | BTC |
+| **5 min (to close)** | **0.465** | 0.487 | **ETH**: also higher AUC (0.852 vs 0.838), accuracy (75.5% vs 74.4%) and calibration (ECE 0.0017 vs 0.0025) |
+
+**Why ETH is more predictable at the 5-minute horizon:** its volatility is markedly more forecastable (finding 7).
+The probability of finishing above the fixed reference depends mostly on the displacement measured in units of
+the remaining volatility, so smoother, more forecastable volatility makes that probability sharper. Even the
+naive random-walk baseline is far better on ETH at 5 minutes (0.478 vs 0.534).
+
+**Why BTC is more predictable from 10 s to 1 min:** BTC's spot lags its perpetual for longer, so its short-horizon
+directional signal persists longer (finding 3). ETH's spot catches up within 1–2 s, and BTC's lead over ETH, though
+real, adds only a little. The two assets start from the same naive level at these horizons.
+
+**How the ETH model uses this:** the volatility engine, with BTC volatility inputs at every horizon, carries the
+ETH edge. The BTC leader drives direction only up to 60 s. The design choices were re-decided on ETH validation
+data rather than copied: recency weighting only at 10 s, 15 s and 5 min; no adaptive ensemble; round levels kept.
