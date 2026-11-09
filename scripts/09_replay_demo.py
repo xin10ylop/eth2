@@ -25,7 +25,7 @@ a = ap.parse_args()
 t_win = int(dt.datetime.fromisoformat(a.start).replace(tzinfo=dt.UTC).timestamp())
 t_win -= t_win % 300
 lo = t_win - BUF - 10
-ser = se.load_range(lo, t_win + 400)
+ser = se.load_with_cross(lo, t_win + 400)   # ETH + BTC leader on the same grid
 pred = LivePredictor.from_artifacts(a.models)
 t0 = time.time()
 # replay from 1 second before the window so the first emitted decision is e=0

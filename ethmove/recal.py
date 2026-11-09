@@ -93,7 +93,10 @@ def trailing_recalibrate(ts, p, y, lookback_days=14, gap_s=3600, min_rows=20000,
 E_EDGES = (1, 60, 120, 180, 240)
 
 
-STACK_HORIZONS = ("T",)   # adaptive prior/head ensemble (chosen on validation); others: 2-parameter recalibration
+# ETH validation decision: the adaptive prior/head ensemble did not beat plain recalibration at any horizon
+# (artifacts/ablation/adaptive_ensemble_models_val.json), unlike BTC where the 5-minute head was weaker than the
+# prior at the window open.  So ETH uses the 2-parameter daily recalibration at every horizon.
+STACK_HORIZONS: tuple = ()
 
 
 class Recalibrator:
